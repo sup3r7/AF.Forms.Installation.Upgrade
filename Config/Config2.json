@@ -1,0 +1,50 @@
+{
+    "SourceIPAddress":  "10.40.168.67",
+    "Servers":  [
+                    {
+                        "Name":  "NOVFLSSRVDEMO",
+                        "FormFlexPart":  "Fls",
+                        "IPAddress":  "10.40.168.66",
+                        "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
+                        "IncludedInUpdate":  false,
+                        "PackageName":  "NightlyBuild",
+                        "Environment":  "test"
+                    },
+                    {
+                        "Name":  "NOVFASSRVDEMO",
+                        "FormFlexPart":  "Fas",
+                        "IPAddress":  "10.40.168.67",
+                        "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
+                        "IncludedInUpdate":  true,
+                        "PackageName":  "NightlyBuild",
+                        "Environment":  "test"
+                    },
+                    {
+                        "Name":  "NOVFASSRVDEMO",
+                        "FormFlexPart":  "Lab",
+                        "IPAddress":  "10.40.168.67",
+                        "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
+                        "IncludedInUpdate":  false,
+                        "PackageName":  "NightlyBuild",
+                        "Environment":  "production"
+                    },
+                    {
+                        "Name":  "NOVDBO1",
+                        "FormFlexPart":  "Rdm",
+                        "IPAddress":  "10.40.168.83",
+                        "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
+                        "IncludedInUpdate":  true,
+                        "PackageName":  "Reports",
+                        "Environment":  "production"
+                    },
+                    {
+                        "Name":  "NOVDBO1",
+                        "FormFlexPart":  "Etl",
+                        "IPAddress":  "10.40.168.83",
+                        "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
+                        "IncludedInUpdate":  false,
+                        "PackageName":  "Reports",
+                        "Environment":  "production"
+                    }
+                ]
+}
