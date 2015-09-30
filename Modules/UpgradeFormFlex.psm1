@@ -140,14 +140,15 @@ function Get-ArtifactFiles
         [string]
         $Path
     )
-
+    Begin 
+    { 
+        Write-LogMessage -Message "Searching for the latest artifact files..." -ErrorType Info | Write-Output | Out-File -FilePath $Global:tempFilePath -Append
+    }
     Process
     {
 	    try
         {
            $foundArtifacts = @{};
-
-           Write-LogMessage -Message "Searching for the latest artifact files..." -ErrorType Info | Write-Output | Out-File -FilePath $Global:tempFilePath -Append
 
            $foundArtifact = Get-ArtifactFile -Path $Path -Regex "(?<packagename>\w+)_svn_(?<buildvcsnumber>\d+)_\w{1,1}\.(?<buildcounter>\d+)"
 
@@ -399,10 +400,10 @@ function Update-Server
                
             }
 
-            $Script:artifactFiles = Get-ArtifactFiles $Script:rootPath
+          
 
                    # Exit script if no artifact was found
-            if ($Script:artifactFiles.Count -lt 1)
+            if ($Global:artifactFiles.Count -lt 1)
             {
                 return
             }
@@ -434,7 +435,7 @@ function Update-Server
             
                     $Script:upgradeConfig.Servers | ForEach-Object { 
     
-                    $_ | Update-Server -sourceIPAddress $Script:upgradeConfig.SourceIPAddress -artifactFile $Script:artifactFiles[$_.PackageName].FilePath 
+                    $_ | Update-Server -sourceIPAddress $Script:upgradeConfig.SourceIPAddress -artifactFile $Global:artifactFiles[$_.PackageName].FilePath 
             }
             
             })
@@ -472,7 +473,7 @@ function Update-Server
 
                 $server_combobox =  (Get-Variable "$($currentEnvironment)_server_combobox" -ValueOnly)
 
-                Update-Server -Server $server_combobox.SelectedItem -sourceIPAddress $Script:upgradeConfig.SourceIPAddress -artifactFile $Script:artifactFiles[$server_combobox.SelectedItem.PackageName].FilePath 
+                Update-Server -Server $server_combobox.SelectedItem -sourceIPAddress $Script:upgradeConfig.SourceIPAddress -artifactFile $Global:artifactFiles[$server_combobox.SelectedItem.PackageName].FilePath 
 
             
             })
@@ -581,7 +582,8 @@ function Update-Server
             $tempLogFileName = 'templogfile.txt'
             $logFilePathParenFolder = Split-Path -Path $LogFilePath -Parent
             $Global:tempFilePath =  Join-Path -Path $logFilePathParenFolder -ChildPath $tempLogFileName
-           
+            $Global:artifactFiles = Get-ArtifactFiles $Script:rootPath
+            
             if(Test-Path -Path $Global:tempFilePath )
             {
                 Remove-Item $Global:tempFilePath -Force
