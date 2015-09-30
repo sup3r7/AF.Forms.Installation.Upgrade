@@ -84,7 +84,7 @@ try
 
     # Replacing Client files
     Write-Host "Replacing Client XAP file..." -ForegroundColor Green
-
+     Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
     $clientBinPath = Join-Path $scriptPath "$formType\Client\ClientBin\"
 
     Remove-Item -Path "$clientBinPath\*" -Force 
@@ -93,7 +93,7 @@ try
 
     # Replacing Server files
     Write-Host "Replacing Server dll files..." -ForegroundColor Green
-    
+     Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
     $serverBinPath =  Join-Path $scriptPath "$formType\Server\Bin\"
 
     Remove-Item -Path "$serverBinPath\*" -Force -Include "*.dll" 
@@ -104,7 +104,7 @@ try
     # Migrating database
     #
     Write-Host "Migrating database..." -ForegroundColor Green
-
+     Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
     $xmlName = "web.config"
     $formTypeDbContext = $formType + "DbContext"
     $xml = [xml](Get-Content "$scriptPath/$formType/Server/$xmlName") 
@@ -117,6 +117,7 @@ try
     if(!$module)
     {
         Write-Host "Could not find Af.Forms.Tools.Fls.DataBaseMigrator.dll" -ForegroundColor Red
+         Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
     }
 
     $psModelInfo = Import-Module $module.FullName  -PassThru
@@ -124,14 +125,15 @@ try
     $result =  Update-MigrationToLatest -ConnectionString $connectionString.'#text' -FormType $formType
 
 	Write-Host "Migration result: " + @result -ForegroundColor Green
-
+ Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
     Remove-Module "Af.Forms.Tools.Fls.DataBaseMigrator" -Force
 }
 catch [System.Net.WebException],[System.Exception]
 {
-	Write-Host "Unhandled exception in UpgradeFas script" -ForegroundColor Red
-	Write-host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-    Write-host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red | Tee-Object -FilePath ./errorLog.txt 
+    Write-Output "Unhandled exception in UpgradeFas script" | Out-file $Global:tempFilePath -Append
+    Write-Output "Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
+    Write-host  -ForegroundColor Red | Tee-Object -FilePath ./errorLog.txt 
+    Write-Output "Exception Message: $($_.Exception.Message)" | Out-file $Global:tempFilePath -Append
 }
 finally
 {

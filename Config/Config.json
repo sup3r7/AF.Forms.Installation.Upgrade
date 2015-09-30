@@ -1,41 +1,41 @@
 {
-    "SourceIPAddress":  "192.168.44.67",
+    "SourceIPAddress":  "10.40.164.126",
     "Servers":  [
                     {
                         "Name":  "NOVFLSSRVDEMO",
                         "FormFlexPart":  "Fls",
-                        "IPAddress":  "10.40.168.66",
+                        "IPAddress":  "10.40.164.126",
                         "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
                         "IncludedInUpdate":  true,
                         "PackageName":  "NightlyBuild",
                         "Environment":  "test",
                         "Domain":  "TestDomain",
-                        "UserName":  "Administrator",
-                        "Password":  ""
+                        "UserName":  "A501205",
+                        "Password":  "!Fab7@DeQ3"
                     },
                     {
                         "Name":  "NOVFASSRVDEMO",
                         "FormFlexPart":  "Fas",
-                        "IPAddress":  "10.40.168.67",
+                        "IPAddress":  "10.40.164.126",
                         "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
                         "IncludedInUpdate":  true,
                         "PackageName":  "NightlyBuild",
                         "Environment":  "test",
                         "Domain":  "",
-                        "UserName":  "Administrator",
-                        "Password":  "QA321ik!"
+                        "UserName":  "A501205",
+                        "Password":  "!Fab7@DeQ3"
                     },
                     {
                         "Name":  "NOVFASSRVDEMO",
                         "FormFlexPart":  "Lab",
-                        "IPAddress":  "10.40.168.67",
+                        "IPAddress":  "10.40.164.126",
                         "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
                         "IncludedInUpdate":  false,
                         "PackageName":  "NightlyBuild",
                         "Environment":  "test",
                         "Domain":  "",
-                        "UserName":  "",
-                        "Password":  ""
+                        "UserName":  "A501205",
+                        "Password":  "!Fab7@DeQ3"
                     },
                     {
                         "Name":  "NOVDBO1",
@@ -46,8 +46,8 @@
                         "PackageName":  "Reports",
                         "Environment":  "production",
                         "Domain":  "",
-                        "UserName":  "",
-                        "Password":  ""
+                        "UserName":  "A501205",
+                        "Password":  "!Fab7@DeQ3"
                     },
                     {
                         "Name":  "NOVDBO1",
@@ -58,8 +58,8 @@
                         "PackageName":  "Reports",
                         "Environment":  "production",
                         "Domain":  "",
-                        "UserName":  "",
-                        "Password":  ""
+                        "UserName":  "A501205",
+                        "Password":  "!Fab7@DeQ3"
                     }
                 ]
 }
