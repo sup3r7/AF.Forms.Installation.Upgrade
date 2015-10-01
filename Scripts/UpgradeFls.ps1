@@ -3,6 +3,16 @@
 #
 
 $formType = "Fls"
+
+$Global:tempFilePath = "./$($formType)tempLogFile.txt"
+
+if(Test-Path -Path $Global:tempFilePath)
+{
+   Remove-Item -Path $Global:tempFilePath -Force -ErrorAction SilentlyContinue
+}
+
+New-Item -Path $Global:tempFilePath -ItemType File
+
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 
 #Create paths to temporary folders
@@ -35,7 +45,7 @@ $shell = new-object -ComObject shell.application
 
 if([string]::IsNullOrEmpty($zipPath))
 {
-    Write-Host "Could not find any zip file" -ForegroundColor Red
+    Write-Output "Error: Could not find any zip file" | Out-file $Global:tempFilePath -Append
     Break;
 }
 
@@ -44,8 +54,9 @@ try
     #
     # Stop SitComm service
     #
-    Write-Host "Stopping SitComm..." -ForegroundColor Green
-	$sitComm = Get-Service SitCommWindowsService -ErrorAction SilentlyContinue
+    Write-Output "Info: Stopping SitComm..." | Out-file $Global:tempFilePath -Append
+    	
+$sitComm = Get-Service SitCommWindowsService -ErrorAction SilentlyContinue
 	if ($sitComm) 
 	{	
 		Stop-Service SitCommWindowsService -WarningAction SilentlyContinue
@@ -54,7 +65,7 @@ try
     #
     # Unpack artifact
     #
-    Write-Host "Unzipping artifact..." -ForegroundColor Green
+    Write-Output "Info: Unzipping artifact..." | Out-file $Global:tempFilePath -Append
 
     $zip = $shell.NameSpace($zipPath)
 
@@ -83,7 +94,7 @@ try
     #
     # Replacing Client files
     #
-    Write-Host "Replacing Client XAP file..." -ForegroundColor Green
+    Write-Output "Info: Replacing Client XAP file..." | Out-file $Global:tempFilePath -Append
 
     $clientBinPath = Join-Path $scriptPath "$formType\Client\ClientBin\"
 
@@ -94,7 +105,7 @@ try
     #
     # Replacing Server files
     #
-    Write-Host "Replacing Server dll files..." -ForegroundColor Green
+    Write-Output "Info: Replacing Server dll files..." | Out-file $Global:tempFilePath -Append
     
     $serverBinPath =  Join-Path $scriptPath "$formType\Server\Bin\"
 
@@ -105,7 +116,8 @@ try
     #
     # Replacing SitComm files
     #
-    Write-Host "Replacing SitComm files..." -ForegroundColor Green
+    Write-Host  -ForegroundColor Green
+    Write-Output "Info: Replacing SitComm files..." | Out-file $Global:tempFilePath -Append
     
     $sitCommBinPath =  Join-Path $scriptPath "$formType\WindowsService\"
 
@@ -116,7 +128,8 @@ try
     #
     # Migrating database
     #
-    Write-Host "Migrating database..." -ForegroundColor Green
+    Write-Output "Info: Migrating database..."| Out-file $Global:tempFilePath -Append
+
 
     $xmlName = "web.config"
     $formTypeDbContext = $formType + "DbContext"
@@ -129,28 +142,31 @@ try
 
     if(!$module)
     {
-        Write-Host "Could not find Af.Forms.Tools.Fls.DataBaseMigrator.dll" -ForegroundColor Red
+        Write-Output "Error: Could not find Af.Forms.Tools.Fls.DataBaseMigrator.dll" | Out-file $Global:tempFilePath -Append
+
     }
 
     $psModelInfo = Import-Module $module.FullName  -PassThru
 
     $result =  Update-MigrationToLatest -ConnectionString $connectionString.'#text' -FormType $formType
 
-	Write-Host "Migration result: " + @result -ForegroundColor Green
-
+    Write-Output "Info: Migration result: $result" | Out-file $Global:tempFilePath -Append
+    
     Remove-Module "Af.Forms.Tools.Fls.DataBaseMigrator" -Force
 }
 catch [System.Net.WebException],[System.Exception]
 {
-	Write-Host "Unhandled exception in UpgradeFas script" -ForegroundColor Red
-	Write-host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-    Write-host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red | Tee-Object -FilePath ./errorLog.txt 
+    Write-Output "Error: Unhandled exception in UpgradeFas script"| Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Exception Message: $($_.Exception.Message)"| Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
+    
 }
 finally
 {
     # Start SitComm service
-    Write-Host "Starting SitComm..." -ForegroundColor Green
-	if ($sitComm) 
+    Write-Output "Error: Starting SitComm..." | Out-file $Global:tempFilePath -Append
+	
+    if ($sitComm) 
 	{	
 		Start-Service SitCommWindowsService 
 	}

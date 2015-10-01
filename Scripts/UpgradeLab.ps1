@@ -3,6 +3,16 @@
 #
 
 $formType = "LabClient"
+
+$Global:tempFilePath = "./$($formType)tempLogFile.txt"
+
+if(Test-Path -Path $Global:tempFilePath)
+{
+   Remove-Item -Path $Global:tempFilePath -Force -ErrorAction SilentlyContinue
+}
+
+New-Item -Path $Global:tempFilePath -ItemType File
+
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 #$scriptPath = "C:\Program Files (x86)\FormFlex System"
 
@@ -28,7 +38,9 @@ $shell = new-object -ComObject shell.application
 
 if([string]::IsNullOrEmpty($zipPath))
 {
-    Write-Host "Could not find any zip file" -ForegroundColor Red
+    Write-Host "" -ForegroundColor Red
+    Write-Output "Info: Could not find any zip file..." | Out-file $Global:tempFilePath -Append 
+    
     Break;
 }
 
@@ -37,7 +49,7 @@ try
     #
     # Unpack artifact
     #
-    Write-Host "Unzipping artifact..." -ForegroundColor Green
+    Write-Output "Info: Unzipping artifact..." | Out-file $Global:tempFilePath -Append 
 
     $zip = $shell.NameSpace($zipPath)
 
@@ -58,9 +70,10 @@ try
     $formPartTempFullPath = Join-Path $tempFormTypeFolder.FullName -ChildPath "$formType\"
 
     # Replacing Lab Client files files
-    Write-Host "Replacing Lab Client files..." -ForegroundColor Green
+    Write-Output "Info: Replacing Lab Client files..." | Out-file $Global:tempFilePath -Append 
     
     $labClientPath =  Join-Path $scriptPath "LabClient\"
+    
     $itemsToRemove = Get-ChildItem $labClientPath -Directory
                            
     $itemsToRemove | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
@@ -70,9 +83,9 @@ try
 }
 catch [System.Net.WebException],[System.Exception]
 {
-	Write-Host "Unhandled exception in UpgradeFas script" -ForegroundColor Red
-	Write-host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-    Write-host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red | Tee-Object -FilePath ./errorLog.txt 
+    Write-Output "Error: Unhandled exception in UpgradeLab script" | Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Exception Message: $($_.Exception.Message)" | Out-file $Global:tempFilePath -Append
 }
 finally
 {

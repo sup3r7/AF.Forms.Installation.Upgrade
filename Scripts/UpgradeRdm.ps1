@@ -3,6 +3,16 @@
 #
 
 $formType = "Rdm"
+
+$Global:tempFilePath = "./$($formType)tempLogFile.txt"
+
+if(Test-Path -Path $Global:tempFilePath)
+{
+   Remove-Item -Path $Global:tempFilePath -Force -ErrorAction SilentlyContinue
+}
+
+New-Item -Path $Global:tempFilePath -ItemType File
+
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 #$scriptPath = "C:\Program Files (x86)\FormFlex System"
 
@@ -28,7 +38,8 @@ $shell = new-object -ComObject shell.application
 
 if([string]::IsNullOrEmpty($zipPath))
 {
-    Write-Host "Could not find any zip file" -ForegroundColor Red
+    Write-Output "Info: Could not find any zip file" | Out-file $Global:tempFilePath -Append
+    
     Break;
 }
 
@@ -36,7 +47,7 @@ try
 {
     # Unpack artifact
    
-    Write-Host "Unzipping artifact..." -ForegroundColor Green
+    Write-Output "Info: Unzipping artifact..." | Out-file $Global:tempFilePath -Append
 
     $zip = $shell.NameSpace($zipPath)
 
@@ -55,8 +66,9 @@ try
 
     if(!$sqlFile)
     {
-       Write-Host "Could not find sql file to execute" -ForegroundColor Red
-       return;
+        Write-Output "Error: Could not find sql file to execute" | Out-file $Global:tempFilePath -Append
+       
+        return;
     }
 
     # Navigate to database where the script will be executed
@@ -69,9 +81,9 @@ try
 }
 catch [System.Net.WebException],[System.Exception]
 {
-	Write-Host "Unhandled exception in UpgradeRdm script" -ForegroundColor Red
-	Write-host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-    Write-host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red | Tee-Object -FilePath ./errorLog.txt 
+    Write-Output "Error: Unhandled exception in UpgradeRdm script" | Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Exception Message: $($_.Exception.Message)" | Out-file $Global:tempFilePath -Append
 }
 finally
 {

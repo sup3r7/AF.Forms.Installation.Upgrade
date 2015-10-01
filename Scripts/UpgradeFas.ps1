@@ -2,7 +2,11 @@
 # Upgrade FAS installation
 #
 
-$Global:tempFilePath = './tempLogFile.txt'
+
+
+$formType = "Fas"
+
+$Global:tempFilePath = "./$($formType)tempLogFile.txt"
 
 if(Test-Path -Path $Global:tempFilePath)
 {
@@ -11,7 +15,6 @@ if(Test-Path -Path $Global:tempFilePath)
 
 New-Item -Path $Global:tempFilePath -ItemType File
 
-$formType = "Fas"
 #$scriptPath = "C:\Program Files (x86)\FormFlex System"
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 
@@ -45,7 +48,7 @@ $shell = new-object -ComObject shell.application
 
 if([string]::IsNullOrEmpty($zipPath))
 {
-    Write-Host "Could not find any zip file" -ForegroundColor Red
+     Write-Output "Error: Could not find any zip file" | Out-file $Global:tempFilePath -Append
     Break;
 }
 
@@ -55,7 +58,7 @@ try
     # Unpack artifact
     #
 
-    Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
+    Write-Output "Info: Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
  
 
     $zip = $shell.NameSpace($zipPath)
@@ -83,8 +86,8 @@ try
     $formPartTempFullPath = Join-Path $tempFormTypeFolder.FullName -ChildPath "$formType\"
 
     # Replacing Client files
-    Write-Host "Replacing Client XAP file..." -ForegroundColor Green
-     Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
+    Write-Output "Info: Replacing Client XAP file..."  | Out-file $Global:tempFilePath -Append
+    
     $clientBinPath = Join-Path $scriptPath "$formType\Client\ClientBin\"
 
     Remove-Item -Path "$clientBinPath\*" -Force 
@@ -92,8 +95,8 @@ try
     Copy-Item (Get-ChildItem -Path (join-path $tempFormTypeFolder.FullName "\$formType\Client") -Recurse -Include "*.xap" ) -Destination $clientBinPath -Force
 
     # Replacing Server files
-    Write-Host "Replacing Server dll files..." -ForegroundColor Green
-     Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
+    Write-Output "Info: Replacing Server dll files..." | Out-file $Global:tempFilePath -Append
+    
     $serverBinPath =  Join-Path $scriptPath "$formType\Server\Bin\"
 
     Remove-Item -Path "$serverBinPath\*" -Force -Include "*.dll" 
@@ -103,8 +106,7 @@ try
     #
     # Migrating database
     #
-    Write-Host "Migrating database..." -ForegroundColor Green
-     Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
+    Write-Output "Verbose: Migrating database..." | Out-file $Global:tempFilePath -Append
     $xmlName = "web.config"
     $formTypeDbContext = $formType + "DbContext"
     $xml = [xml](Get-Content "$scriptPath/$formType/Server/$xmlName") 
@@ -116,24 +118,25 @@ try
 
     if(!$module)
     {
-        Write-Host "Could not find Af.Forms.Tools.Fls.DataBaseMigrator.dll" -ForegroundColor Red
-         Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
+       Write-Output "Error: Could not find Af.Forms.Tools.Fls.DataBaseMigrator.dll" | Out-file $Global:tempFilePath -Append
     }
 
     $psModelInfo = Import-Module $module.FullName  -PassThru
 
     $result =  Update-MigrationToLatest -ConnectionString $connectionString.'#text' -FormType $formType
 
-	Write-Host "Migration result: " + @result -ForegroundColor Green
- Write-Output "Unzipping artifact..."  | Out-file $Global:tempFilePath -Append
+    Write-Output "Verbose: Migration result: $result"  | Out-file $Global:tempFilePath -Append
+    
     Remove-Module "Af.Forms.Tools.Fls.DataBaseMigrator" -Force
+
+    return (Get-Content $Global:tempFilePath )
+
 }
 catch [System.Net.WebException],[System.Exception]
 {
-    Write-Output "Unhandled exception in UpgradeFas script" | Out-file $Global:tempFilePath -Append
-    Write-Output "Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
-    Write-host  -ForegroundColor Red | Tee-Object -FilePath ./errorLog.txt 
-    Write-Output "Exception Message: $($_.Exception.Message)" | Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Unhandled exception in UpgradeFas script" | Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
+    Write-Output "Error: Exception Message: $($_.Exception.Message)" | Out-file $Global:tempFilePath -Append
 }
 finally
 {
