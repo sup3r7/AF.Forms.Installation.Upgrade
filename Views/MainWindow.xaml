@@ -10,109 +10,116 @@
         </ResourceDictionary>
     </Window.Resources>
     <Border Margin="0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"  >
-        <TabControl x:Name="tabControl" Background="{x:Null}" BorderThickness="0,1,1,1" Padding="0" Margin="0" >
-            <TabItem Header="Production" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-                <Grid x:Name="production_content_grid">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <GridSplitter x:Name="production_gridSplitter" BorderThickness="0,0,5,0" Margin="234,0,0,0" HorizontalAlignment="Stretch"/>
-                    <ScrollViewer x:Name="production_ScrollViewer"  Grid.Column="1" Margin="0,0,0,60">
-                        <TextBlock x:Name="production_Info_TextBlock" TextWrapping="Wrap" Background="White"/>
-                    </ScrollViewer>
-                    <Border x:Name="production_tab_border" BorderBrush="#FF206DC9" BorderThickness="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-                        <Grid x:Name="production_propertyGrid">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <ComboBox x:Name="production_server_combobox" Grid.Column="1" Margin="0" VerticalContentAlignment="Center" DisplayMemberPath="Name"/>
-                            <Label x:Name="production_currentServer_label" Content="{Binding SelectedValue, ElementName=server_combobox}"/>
-                            <Label x:Name="production_formflextpart_label" Content="FormFlex Part " Grid.Row="1"/>
-                            <Label x:Name="production_IPAdress_label" Content="Ip Adress" Grid.Row="2"/>
-                            <Label x:Name="production_packageName_label" Content="Package Name" Grid.Row="3"/>
-                            <Label x:Name="production_InludeInScript_label" Content="Include In Script" Grid.Row="4"/>
-                            <Label x:Name="production_formflextpart_value_label" Content="Label" Grid.Row="1" Grid.Column="1" Margin="0"/>
-                            <Label x:Name="production_IPAdress_value_label" Content="Label" Grid.Row="2" Grid.Column="1"/>
-                            <Label x:Name="production_packageName_value_label" Content="Label" Grid.Row="3" Grid.Column="1"/>
-
-                            <CheckBox  x:Name="production_include_toggle" Content="" Grid.Column="1" Grid.Row="4"  IsEnabled="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5,0,87,0" />
-
-                        </Grid>
-                    </Border>
-                    <Grid x:Name="production_button_grid" Height="59" VerticalAlignment="Bottom" Grid.Column="1" Margin="0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TabControl x:Name="tabControl" Background="{x:Null}" BorderThickness="0,1,1,1" Padding="0" Margin="0" Grid.Row="1" >
+                <TabItem Header="Production" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+                    <Grid x:Name="production_content_grid">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition/>
-                            <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <Button x:Name="production_clear_button" Content="Clear" Grid.Column="2"/>
-                        <Button x:Name="production_runAll_button" Content="Run All" Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                        <Button x:Name="production_runScript_button" Content="Run" BorderThickness="1"/>
-                    </Grid>
-                </Grid>
-            </TabItem>
-            <TabItem Header="Test" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Margin="-2,-2,-2,0">
-                <Grid x:Name="test_content_grid" Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
-                    <GridSplitter x:Name="test_gridSplitter" BorderThickness="0,0,5,0" Margin="233,0,0,0" HorizontalAlignment="Stretch"/>
-                    <ScrollViewer x:Name="test_ScrollViewer"   Grid.Column="1" Margin="0,0,0,58">
-                        <TextBlock x:Name="test_Info_TextBlock" TextWrapping="Wrap" Background="White" Margin="0,0,0,1"/>
-                    </ScrollViewer>
-                    <Border x:Name="test_tab_border" BorderBrush="#FF206DC9" BorderThickness="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
-                        <Grid x:Name="test_propertyGrid">
+                        <GridSplitter x:Name="production_gridSplitter" BorderThickness="0,0,5,0" Margin="234,0,0,0" HorizontalAlignment="Stretch"/>
+                        <ScrollViewer x:Name="production_ScrollViewer"  Grid.Column="1" Margin="0,0,0,60">
+                            <TextBlock x:Name="production_Info_TextBlock" TextWrapping="Wrap" Background="White"/>
+                        </ScrollViewer>
+                        <Border x:Name="production_tab_border" BorderBrush="#FF206DC9" BorderThickness="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+                            <Grid x:Name="production_propertyGrid">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <ComboBox x:Name="production_server_combobox" Grid.Column="1" Margin="0" VerticalContentAlignment="Center" DisplayMemberPath="Name"/>
+                                <Label x:Name="production_currentServer_label" Content="{Binding SelectedValue, ElementName=server_combobox}"/>
+                                <Label x:Name="production_formflextpart_label" Content="FormFlex Part " Grid.Row="1"/>
+                                <Label x:Name="production_IPAdress_label" Content="Ip Adress" Grid.Row="2"/>
+                                <Label x:Name="production_packageName_label" Content="Package Name" Grid.Row="3"/>
+                                <Label x:Name="production_InludeInScript_label" Content="Include In Script" Grid.Row="4"/>
+                                <Label x:Name="production_formflextpart_value_label" Content="Label" Grid.Row="1" Grid.Column="1" Margin="0"/>
+                                <Label x:Name="production_IPAdress_value_label" Content="Label" Grid.Row="2" Grid.Column="1"/>
+                                <Label x:Name="production_packageName_value_label" Content="Label" Grid.Row="3" Grid.Column="1"/>
+
+                                <CheckBox  x:Name="production_include_toggle" Content="" Grid.Column="1" Grid.Row="4"  IsEnabled="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5,0,87,0" />
+
+                            </Grid>
+                        </Border>
+                        <Grid x:Name="production_button_grid" Height="59" VerticalAlignment="Bottom" Grid.Column="1" Margin="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
+                                <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <ComboBox x:Name="test_server_combobox" Grid.Column="1" Margin="0" VerticalContentAlignment="Center" DisplayMemberPath="Name" />
-                            <Label x:Name="test_currentServer_label" Content="{Binding SelectedValue, ElementName=server_combobox}"/>
-                            <Label x:Name="test_formflextpart_label" Content="FormFlex Part " Grid.Row="1"/>
-                            <Label x:Name="test_IPAdress_label" Content="Ip Adress" Grid.Row="2"/>
-                            <Label x:Name="test_packageName_label" Content="Package Name" Grid.Row="3"/>
-                            <Label x:Name="test_InludeInScript_label" Content="Include In Script" Grid.Row="4"/>
-                            <Label x:Name="test_formflextpart_value_label" Content="Label" Grid.Row="1" Grid.Column="1" Margin="0"/>
-                            <Label x:Name="test_IPAdress_value_label" Content="Label" Grid.Row="2" Grid.Column="1"/>
-                            <Label x:Name="test_packageName_value_label" Content="Label" Grid.Row="3" Grid.Column="1"/>
-
-                            <CheckBox  x:Name="test_include_toggle" Content="" Grid.Column="1" Grid.Row="4"  IsEnabled="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5,0,87,0" />
-
+                            <Button x:Name="production_clear_button" Content="Clear" Grid.Column="2"/>
+                            <Button x:Name="production_runAll_button" Content="Run All" Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                            <Button x:Name="production_runScript_button" Content="Run" BorderThickness="1"/>
                         </Grid>
-                    </Border>
-                    <Grid x:Name="test_button_grid" Height="59.028" VerticalAlignment="Bottom" Grid.Column="2" Margin="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <Button x:Name="test_clear_button" Content="Clear" Grid.Column="2"/>
-                        <Button x:Name="test_runAll_button" Content="Run All" Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
-                        <Button Grid.Column="0" x:Name="test_runScript_button" Content="Run" BorderThickness="1"/>
                     </Grid>
-                </Grid>
-            </TabItem>
-        </TabControl>
+                </TabItem>
+                <TabItem Header="Test" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Margin="-2,-2,-2,0" Visibility="Collapsed">
+                    <Grid x:Name="test_content_grid" Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <GridSplitter x:Name="test_gridSplitter" BorderThickness="0,0,5,0" Margin="233,0,0,0" HorizontalAlignment="Stretch"/>
+                        <ScrollViewer x:Name="test_ScrollViewer"   Grid.Column="1" Margin="0,0,0,58">
+                            <TextBlock x:Name="test_Info_TextBlock" TextWrapping="Wrap" Background="White" Margin="0,0,0,1"/>
+                        </ScrollViewer>
+                        <Border x:Name="test_tab_border" BorderBrush="#FF206DC9" BorderThickness="1" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+                            <Grid x:Name="test_propertyGrid">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <ComboBox x:Name="test_server_combobox" Grid.Column="1" Margin="0" VerticalContentAlignment="Center" DisplayMemberPath="Name" />
+                                <Label x:Name="test_currentServer_label" Content="{Binding SelectedValue, ElementName=server_combobox}"/>
+                                <Label x:Name="test_formflextpart_label" Content="FormFlex Part " Grid.Row="1"/>
+                                <Label x:Name="test_IPAdress_label" Content="Ip Adress" Grid.Row="2"/>
+                                <Label x:Name="test_packageName_label" Content="Package Name" Grid.Row="3"/>
+                                <Label x:Name="test_InludeInScript_label" Content="Include In Script" Grid.Row="4"/>
+                                <Label x:Name="test_formflextpart_value_label" Content="Label" Grid.Row="1" Grid.Column="1" Margin="0"/>
+                                <Label x:Name="test_IPAdress_value_label" Content="Label" Grid.Row="2" Grid.Column="1"/>
+                                <Label x:Name="test_packageName_value_label" Content="Label" Grid.Row="3" Grid.Column="1"/>
+
+                                <CheckBox  x:Name="test_include_toggle" Content="" Grid.Column="1" Grid.Row="4"  IsEnabled="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5,0,87,0" />
+
+                            </Grid>
+                        </Border>
+                        <Grid x:Name="test_button_grid" Height="59.028" VerticalAlignment="Bottom" Grid.Column="2" Margin="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="test_clear_button" Content="Clear" Grid.Column="2"/>
+                            <Button x:Name="test_runAll_button" Content="Run All" Grid.Column="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                            <Button Grid.Column="0" x:Name="test_runScript_button" Content="Run" BorderThickness="1"/>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            <ProgressBar x:Name="production_progressbar" Margin="0" IsIndeterminate="True" Height="10" Visibility="Collapsed"/>
+        </Grid>
     </Border>
 </Window>

@@ -225,7 +225,10 @@ function Update-Server
 			$InstallationPath = $Server.InstallPath.Trim()
 			$FormFlexPart = $Server.FormFlexPart.Trim()
 			$DestinationIpAddress = $Server.IPAddress.Trim()
-          
+            $progressBar = (Get-Variable "$($Server.Environment)_progressbar" -ValueOnly)
+            
+            $progressBar.Dispatcher.Invoke( { $progressBar.Visibility = [System.Windows.Visibility]::Visible }) 
+            
             $Domain = [string]::Empty
 
             if(![string]::IsNullOrEmpty($Server.Domain ))
@@ -273,7 +276,7 @@ function Update-Server
 
                 Set-PSBreakpoint -Variable Test
 
-               
+                 $Test = "break here"
 				#Write-LogMessage "Mapping source file location..." -ErrorType Verbose -Environment $using:Server.Environment | Out-File -FilePath $Global:tempFilePath
 				New-PSDrive -Name I -PSProvider FileSystem -Root \\$sourceIpAddress\Install -Credential $localCredential
 
@@ -293,7 +296,7 @@ function Update-Server
                             Copy-Item -Path "I:\Scripts\Initialize-SqlPsEnvironment.ps1" -Destination $installationPath; Break }
 				}
 
-                 $Test = "break here"
+               
 
 				# Run upgrade script
 				#Write-LogMessage "Updating files..." | Out-File -FilePath $Global:tempFilePath -Append
@@ -315,13 +318,19 @@ function Update-Server
 			} -ArgumentList $InstallationPath, $FormFlexPart, $SourceIpAddress, $UpgradePackage, $RemoteCredential, $ArtifactFile
 
 			#Remove-PSSession -Session $Session
+
+                
+               
+
         }
         catch [System.Net.WebException],[System.Exception]
         {
             Write-LogMessage -Message $_ -ErrorType Error | Write-Output | Out-File -FilePath $Global:tempFilePath -Append
+
         }
         finally
         {
+            $progressBar.Visibility = [System.Windows.Visibility]::Collapsed 
           
         }
     }
@@ -471,11 +480,11 @@ function Update-Server
 
                 $currentEnvironment = $Matches.Values[0]
 
+
                 $server_combobox =  (Get-Variable "$($currentEnvironment)_server_combobox" -ValueOnly)
 
                 Update-Server -Server $server_combobox.SelectedItem -sourceIPAddress $Script:upgradeConfig.SourceIPAddress -artifactFile $Global:artifactFiles[$server_combobox.SelectedItem.PackageName].FilePath 
 
-            
             })
 
              $include_toggle.add_checked({
