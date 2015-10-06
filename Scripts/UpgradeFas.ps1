@@ -13,7 +13,7 @@ if(Test-Path -Path $Global:tempFilePath)
    Remove-Item -Path $Global:tempFilePath -Force -ErrorAction SilentlyContinue
 }
 
-New-Item -Path $Global:tempFilePath -ItemType File
+New-Item -Path $Global:tempFilePath -ItemType File | Out-Null
 
 #$scriptPath = "C:\Program Files (x86)\FormFlex System"
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
@@ -106,14 +106,18 @@ try
     #
     # Migrating database
     #
-    Write-Output "Verbose: Migrating database..." | Out-file $Global:tempFilePath -Append
+ <#   Write-Output "Info: Migrating database..." | Out-file $Global:tempFilePath -Append
+    
     $xmlName = "web.config"
+    
     $formTypeDbContext = $formType + "DbContext"
+    
     $xml = [xml](Get-Content "$scriptPath/$formType/Server/$xmlName") 
 
     $connectionString = (Select-Xml -Xml $xml -XPath "//connectionStrings/add[@name='$formTypeDbContext']/@connectionString").Node
 
     New-ModuleManifest -Path (Join-Path $tempMigratePath "Migrator\Af.Forms.Tools.Fls.DataBaseMigrator.psd1") -Author "FormFlex Developer" -CompanyName "AF Industry AB" -RequiredAssemblies (Get-ChildItem -Path $tempMigratePath -Recurse -Include "*.dll")
+    
     $module =  (Get-ChildItem -Path $tempMigratePath -Recurse | Where-Object { $_.Name -eq "Af.Forms.Tools.Fls.DataBaseMigrator.dll" })
 
     if(!$module)
@@ -125,10 +129,10 @@ try
 
     $result =  Update-MigrationToLatest -ConnectionString $connectionString.'#text' -FormType $formType
 
-    Write-Output "Verbose: Migration result: $result"  | Out-file $Global:tempFilePath -Append
+    Write-Output "Info: Migration result: $result"  | Out-file $Global:tempFilePath -Append
     
     Remove-Module "Af.Forms.Tools.Fls.DataBaseMigrator" -Force
-
+    #>
     return (Get-Content $Global:tempFilePath )
 
 }
@@ -137,6 +141,8 @@ catch [System.Net.WebException],[System.Exception]
     Write-Output "Error: Unhandled exception in UpgradeFas script" | Out-file $Global:tempFilePath -Append
     Write-Output "Error: Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
     Write-Output "Error: Exception Message: $($_.Exception.Message)" | Out-file $Global:tempFilePath -Append
+
+    return (Get-Content $Global:tempFilePath)
 }
 finally
 {

@@ -78,12 +78,16 @@ try
 
     # Return to previous location
     Pop-Location
+
+    return (Get-Content $Global:tempFilePath )
 }
 catch [System.Net.WebException],[System.Exception]
 {
     Write-Output "Error: Unhandled exception in UpgradeRdm script" | Out-file $Global:tempFilePath -Append
     Write-Output "Error: Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
     Write-Output "Error: Exception Message: $($_.Exception.Message)" | Out-file $Global:tempFilePath -Append
+
+    return (Get-Content $Global:tempFilePath )
 }
 finally
 {

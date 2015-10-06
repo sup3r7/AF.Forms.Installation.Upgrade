@@ -153,21 +153,34 @@ $sitComm = Get-Service SitCommWindowsService -ErrorAction SilentlyContinue
     Write-Output "Info: Migration result: $result" | Out-file $Global:tempFilePath -Append
     
     Remove-Module "Af.Forms.Tools.Fls.DataBaseMigrator" -Force
+
+    return (Get-Content $Global:tempFilePath)
+
 }
 catch [System.Net.WebException],[System.Exception]
 {
     Write-Output "Error: Unhandled exception in UpgradeFas script"| Out-file $Global:tempFilePath -Append
     Write-Output "Error: Exception Message: $($_.Exception.Message)"| Out-file $Global:tempFilePath -Append
     Write-Output "Error: Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
+
+
+	
+    if ($sitComm) 
+	{
+	            # Start SitComm service
+        Write-Output "Info: Starting SitComm..." | Out-file $Global:tempFilePath -Append
+		Start-Service SitCommWindowsService 
+	}
+    else
+    {
+      Write-Output "Error: Could not start sitcomm..." | Out-file $Global:tempFilePath -Append
+    }
+
+    return (Get-Content $Global:tempFilePath)
     
 }
 finally
 {
-    # Start SitComm service
-    Write-Output "Error: Starting SitComm..." | Out-file $Global:tempFilePath -Append
-	
-    if ($sitComm) 
-	{	
-		Start-Service SitCommWindowsService 
-	}
+
+
 }

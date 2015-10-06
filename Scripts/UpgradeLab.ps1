@@ -80,12 +80,17 @@ try
                            
     # The -Container switch will preserve the folder structure, The -Recurse switch will go through all folders..wait for it....recursively  
     Copy-Item  "$(Join-Path $tempFormTypeFolder "\LabClient")\*" -Destination "$($labClientPath)\" -Container -Recurse
+
+    return (Get-Content $Global:tempFilePath )
 }
 catch [System.Net.WebException],[System.Exception]
 {
     Write-Output "Error: Unhandled exception in UpgradeLab script" | Out-file $Global:tempFilePath -Append
     Write-Output "Error: Exception Type: $($_.Exception.GetType().FullName)" | Out-file $Global:tempFilePath -Append
     Write-Output "Error: Exception Message: $($_.Exception.Message)" | Out-file $Global:tempFilePath -Append
+
+    
+    return (Get-Content $Global:tempFilePath )
 }
 finally
 {

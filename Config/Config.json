@@ -1,15 +1,15 @@
 {
-    "SourceIPAddress":  "10.40.168.67",
+    "SourceIPAddress":  "192.168.44.67",
     "Servers":  [
                     {
                         "Name":  "NOVFLSSRVDEMO",
                         "FormFlexPart":  "Fls",
                         "IPAddress":  "10.40.168.66",
                         "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
-                        "IncludedInUpdate":  true,
-                        "PackageName":  "NightlyBuild",
+                        "IncludedInUpdate":  false,
                         "Environment":  "production",
-                        "Domain":  "TestDomain",
+                        "PackageName":  "NightlyBuild",
+                        "Domain":  "",
                         "UserName":  "Administrator",
                         "Password":  "QA321ik!"
                     },
@@ -18,21 +18,21 @@
                         "FormFlexPart":  "Fas",
                         "IPAddress":  "10.40.168.67",
                         "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
+                        "Environment":  "production",
                         "IncludedInUpdate":  true,
                         "PackageName":  "NightlyBuild",
-                        "Environment":  "production",
                         "Domain":  "",
-                        "UserName":  "Administrator",
-                        "Password":  "QA321ik!"
+                        "UserName":  "",
+                        "Password":  ""
                     },
                     {
                         "Name":  "NOVFASSRVDEMO",
                         "FormFlexPart":  "Lab",
                         "IPAddress":  "10.40.168.67",
                         "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
-                        "IncludedInUpdate":  false,
-                        "PackageName":  "NightlyBuild",
+                        "IncludedInUpdate":  true,
                         "Environment":  "production",
+                        "PackageName":  "NightlyBuild",
                         "Domain":  "",
                         "UserName":  "Administrator",
                         "Password":  "QA321ik!"
@@ -43,8 +43,20 @@
                         "IPAddress":  "10.40.168.83",
                         "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
                         "IncludedInUpdate":  true,
-                        "PackageName":  "Reports",
                         "Environment":  "production",
+                        "PackageName":  "Reports",
+                        "Domain":  "",
+                        "UserName":  "Administrator",
+                        "Password":  "QA321ik!"
+                    },
+                    {
+                        "Name":  "MIGRATION",
+                        "FormFlexPart":  "Mgr",
+                        "IPAddress":  "10.40.168.83",
+                        "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
+                        "IncludedInUpdate":  true,
+                        "Environment":  "production",
+                        "PackageName":  "NightlyBuild",
                         "Domain":  "",
                         "UserName":  "Administrator",
                         "Password":  "QA321ik!"
@@ -55,8 +67,8 @@
                         "IPAddress":  "10.40.168.83",
                         "InstallPath":  "C:\\Program Files (x86)\\FormFlex System",
                         "IncludedInUpdate":  false,
-                        "PackageName":  "Reports",
                         "Environment":  "production",
+                        "PackageName":  "Reports",
                         "Domain":  "",
                         "UserName":  "Administrator",
                         "Password":  "QA321ik!"

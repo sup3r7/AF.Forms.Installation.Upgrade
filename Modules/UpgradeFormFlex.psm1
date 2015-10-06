@@ -56,6 +56,44 @@ function Get-UpgradeConfig
     }
 }
 
+
+<#
+.Synopsis
+   Short description
+.DESCRIPTION
+   Long description
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+#>
+function Get-DllVersion
+{
+    [CmdletBinding()]
+    [Alias()]
+    [OutputType([string])]
+    Param
+    (
+        # Param1 help description
+        [Parameter(Mandatory=$true,
+                   ValueFromPipelineByPropertyName=$true,
+                   Position=0)]
+        [System.IO.FileInfo]$Path
+
+    )
+
+    Begin
+    {
+    }
+    Process
+    {
+    }
+    End
+    {
+    }
+}
+
+
 <#
 .Synopsis
    Short description
@@ -225,10 +263,8 @@ function Update-Server
 			$InstallationPath = $Server.InstallPath.Trim()
 			$FormFlexPart = $Server.FormFlexPart.Trim()
 			$DestinationIpAddress = $Server.IPAddress.Trim()
-            $progressBar = (Get-Variable "$($Server.Environment)_progressbar" -ValueOnly)
             
-            $progressBar.Dispatcher.Invoke( { $progressBar.Visibility = [System.Windows.Visibility]::Visible }) 
-            
+
             $Domain = [string]::Empty
 
             if(![string]::IsNullOrEmpty($Server.Domain ))
@@ -265,28 +301,39 @@ function Update-Server
                 return
             }
 
-			$Session = New-PSSession -ComputerName $DestinationIpAddress.Trim() -Credential $RemoteCredential
-
+			$Session = New-PSSession -ComputerName $DestinationIpAddress -Credential $RemoteCredential
+            
+            $localTempLogfileName = "localTempLogfileName.txt" 
             #
             # Everything in this ScriptBlock is executed on the remote server
 			#
-            Invoke-Command  -Session $session -ScriptBlock {
+            $resultHash =  Invoke-Command  -Session $session -ScriptBlock {
 
-			   param ($installationPath, $formFlexPart, $sourceIpAddress, $upgradePackage, $localCredential, $artifactFile)
+			    param ($installationPath, $formFlexPart, $sourceIpAddress, $upgradePackage, $localCredential, $artifactFile, $localTempLogfileName)
 
-                Set-PSBreakpoint -Variable Test
+                Set-PSBreakpoint -Variable BreakHere
+              
+				New-PSDrive -Name I -PSProvider FileSystem -Root "\\$sourceIpAddress\Fabio New Install Files" -Credential $localCredential
+                 
+                if(Test-Path -Path "I:\$localTempLogfileName")
+                {
+                   Remove-Item -Path "I:\$localTempLogfileName" -Force -ErrorAction SilentlyContinue
+                }
 
-                 $Test = "break here"
-				#Write-LogMessage "Mapping source file location..." -ErrorType Verbose -Environment $using:Server.Environment | Out-File -FilePath $Global:tempFilePath
-				New-PSDrive -Name I -PSProvider FileSystem -Root \\$sourceIpAddress\Install -Credential $localCredential
+                New-Item -Path "I:\$localTempLogfileName" -ItemType File | Out-Null
 
-				#Write-LogMessage "Removing old installation files..." 
-				Remove-Item "$installationPath\MigrateTempFolder" -Recurse -ErrorAction SilentlyContinue
-				Get-ChildItem "$installationPath\" -Include *.ps1,*.zip -Recurse | Remove-Item
+				Write-Output "Info: Mapping source file location..." | Out-File -FilePath "I:\$localTempLogfileName" -Append
+
+				Write-Output "Info: Removing old installation files..."  | Out-File -FilePath "I:\$localTempLogfileName" -Append 
+				
+                Remove-Item "$installationPath\MigrateTempFolder" -Recurse -ErrorAction SilentlyContinue
+				
+                Get-ChildItem "$installationPath\" -Include *.ps1,*.zip -Recurse | Remove-Item
 
 				#Write-LogMessage "Copying new installation files..." | Out-File -FilePath $Global:tempFilePath -Append
 				Copy-Item -Path "I:\$artifactFile" -Destination $installationPath
-				switch ($formFlexPart)
+				
+                switch ($formFlexPart)
 				{
 					"Fas" { Copy-Item -Path "I:\Scripts\UpgradeFas.ps1" -Destination $installationPath; Break }
 					"Fls" { Copy-Item -Path "I:\Scripts\UpgradeFls.ps1" -Destination $installationPath; Break }
@@ -294,30 +341,67 @@ function Update-Server
                     "Etl" { Copy-Item -Path "I:\Scripts\MoveEtl.ps1"    -Destination $installationPath; Break }
                     "Rdm" { Copy-Item -Path "I:\Scripts\UpgradeRdm.ps1" -Destination $installationPath;
                             Copy-Item -Path "I:\Scripts\Initialize-SqlPsEnvironment.ps1" -Destination $installationPath; Break }
+
+                    "Mgr" { Copy-Item -Path "I:\Scripts\UpgradeDataBase.ps1" -Destination $installationPath;
+                            Copy-Item -Path "I:\Scripts\UpgradeVersionNumber.ps1" -Destination $installationPath;
+                            Copy-Item -Path "I:\Scripts\Initialize-SqlPsEnvironment.ps1" -Destination $installationPath; Break }
+
 				}
 
-               
+                 $BreakHere = $null
 
 				# Run upgrade script
 				#Write-LogMessage "Updating files..." | Out-File -FilePath $Global:tempFilePath -Append
 
 				switch ($formFlexPart)
 				{
-					"Fas" { . "$installationPath\UpgradeFas.ps1"; Break }
-					"Fls" { . "$installationPath\UpgradeFls.ps1"; Break }
-					"Lab" { . "$installationPath\UpgradeLab.ps1"; Break }
-                    "Etl" { . "$installationPath\MoveEtl.ps1";    Break }
-                    "Rdm" { . "$installationPath\UpgradeRdm.ps1"; Break }
+					"Fas" {   $templog = . "$installationPath\UpgradeFas.ps1"; Break }
+					"Fls" {   $templog = . "$installationPath\UpgradeFls.ps1"; Break }
+					"Lab" {   $templog = . "$installationPath\UpgradeLab.ps1"; Break }
+                    "Etl" {   $templog = . "$installationPath\MoveEtl.ps1";    Break }
+                    "Rdm" {   $templog = . "$installationPath\UpgradeRdm.ps1"; Break }
+                    "Mgr" {   $upgradeDataBaseHash = . "$installationPath\UpgradeDataBase.ps1";
+                              $templog = $upgradeDataBaseHash.Content; $isVersionNumberEqual = $upgradeDataBaseHash.IsVersionNumberEqual
+ Break }
+
                     
 				}
-
-				#Write-LogMessage "Unmapping source file location..." | Out-File -FilePath $Global:tempFilePath -Append
+                
+                $templog | Out-File -FilePath "I:\$localTempLogfileName" -Append
+				
+                Write-Output "Info: Unmapping source file location..." | Out-File -FilePath "I:\$localTempLogfileName" -Append
                 
 				Remove-PSDrive -Name I
 
-			} -ArgumentList $InstallationPath, $FormFlexPart, $SourceIpAddress, $UpgradePackage, $RemoteCredential, $ArtifactFile
+                return @{ Fas = @{ IsVersionNumberEqual = $isVersionNumberEqual } }
 
-			#Remove-PSSession -Session $Session
+			} -ArgumentList $InstallationPath, $FormFlexPart, $SourceIpAddress, $UpgradePackage, $RemoteCredential, $ArtifactFile , $localTempLogfileName
+            
+
+            if(($FormFlexPart -eq "Mgr") -and (!$resultHash.Fas.IsVersionNumberEqual))
+            {   
+                   [String]$Button="YesNo"
+                    $Icon="Information"
+                    $DefaultButton="None"
+                    $Message= "The migration database version number does not match version number in dll, do you want to change  version number on database"
+                    $Title = "test emst"
+                    $Button = [System.Windows.MessageBoxButton]::$Button 
+                    $Icon = [System.Windows.MessageBoxImage]::$Icon 
+                    $DefaultButton = [System.Windows.MessageBoxResult]::$DefaultButton 
+                    $result = [System.Windows.MessageBox]::Show($Message,$Title,$Button,$Icon,$DefaultButton)
+                    
+
+                    if($result -eq "Yes")
+                    {
+                        $version = Invoke-Command -Session $Session -ScriptBlock {  . "$installationPath\UpgradeVersionNumber.ps1" }
+                    }
+            }
+
+            Get-Content -Path $Script:rootPath\$localTempLogfileName | Write-LogMessage 
+            			
+            Add-Content -Path $Global:LogFilePath -Value (Get-Content $Script:rootPath\$localTempLogfileName -raw)
+            
+            Remove-PSSession -Session $Session
 
                 
                
@@ -330,9 +414,16 @@ function Update-Server
         }
         finally
         {
-            $progressBar.Visibility = [System.Windows.Visibility]::Collapsed 
           
+
         }
+    }
+
+    end
+    {
+        $progressBar = (Get-Variable "production_progressbar" -ValueOnly)
+
+        $progressBar.Dispatcher.Invoke([Action]{ $progressBar.Visibility = [System.Windows.Visibility]::Collapsed }) 
     }
 }
 
@@ -466,8 +557,28 @@ function Update-Server
             
             })
 
-            
-            $runScript_button.add_click({
+           $runScript_button.add_PreviewMouseDown({
+
+           
+
+                $currentEnvironment = [string]::Empty;
+                
+
+                if( !($this.Name -match '^[^_]+(?=_)'))
+                {
+                  return 
+                }
+
+                $currentEnvironment = $Matches.Values[0]
+
+                $progressBar = (Get-Variable "$($currentEnvironment)_progressbar" -ValueOnly)
+
+                $progressBar.Dispatcher.Invoke([Action]{ $progressBar.Visibility = [System.Windows.Visibility]::Visible }) 
+                
+
+
+            })
+                $runScript_button.add_click({
 
 
                 $currentEnvironment = [string]::Empty;
@@ -481,10 +592,11 @@ function Update-Server
                 $currentEnvironment = $Matches.Values[0]
 
 
+
                 $server_combobox =  (Get-Variable "$($currentEnvironment)_server_combobox" -ValueOnly)
 
                 Update-Server -Server $server_combobox.SelectedItem -sourceIPAddress $Script:upgradeConfig.SourceIPAddress -artifactFile $Global:artifactFiles[$server_combobox.SelectedItem.PackageName].FilePath 
-
+            
             })
 
              $include_toggle.add_checked({
@@ -766,7 +878,7 @@ function Update-Server
             }
             catch [System.Exception]
             {
-              Write-LogMessage -Message $_ -Environment $Environment -ErrorType Error  |  Write-Output | out-file $Global:tempFilePath -Append
+                Write-LogMessage -Message $_ -Environment $Environment -ErrorType Error  |  Write-Output | out-file $Global:tempFilePath -Append
             }
         }
    }
@@ -790,6 +902,7 @@ function Update-Server
        (
            [Parameter(Mandatory=$true,
                       ValueFromPipelineByPropertyName=$true,
+                      ValueFromPipeline = $true,
                       Position=0)]
            [ValidateNotNullOrEmpty()]
            [string]$Message,
@@ -876,14 +989,20 @@ function Update-Server
                             $Run.Foreground = "Blue"
                        }
             "^Info"    {
-                            $Run.Foreground = "Black"
+                            $Run.Foreground = "Orange"
                        }
             "^Error"   {
                             $Run.Foreground = "Red"
                        }
+            "^Success"   {
+                            $Run.Foreground = "Green"
+                       }
+
+
 }
 
             $infoTextBlock = (Get-Variable "$($Environment)_Info_TextBlock" -ValueOnly -ErrorAction SilentlyContinue)
+            
             $scrollViewer = (Get-Variable "$($Environment)_ScrollViewer" -ValueOnly -ErrorAction SilentlyContinue)
 
            
@@ -892,7 +1011,7 @@ function Update-Server
                 return
             }
 
-            $window.Dispatcher.Invoke( { 
+            $infoTextBlock.Dispatcher.Invoke( { 
                 
                 $infoTextBlock.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
                 $infoTextBlock.Inlines.Add($Run)
