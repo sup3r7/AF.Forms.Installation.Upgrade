@@ -36,6 +36,7 @@ if( Test-Path -Path $tempMigratePath)
 
 #Create temporary folders
 $tempFormTypeFolder = New-Item -ItemType Directory -Path $tempFormTypePath
+
 $tempMigrateFolder = New-Item -ItemType Directory -Path $tempMigratePath
 
 $zipPath = (Get-ChildItem -Path $scriptPath -Recurse -Include "*.zip" | Select-Object -First 1).FullName

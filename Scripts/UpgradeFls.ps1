@@ -2,9 +2,26 @@
 # Upgrade FLS installation
 #
 
+try
+{
+
 $formType = "Fls"
 
 $Global:tempFilePath = "./$($formType)tempLogFile.txt"
+
+
+    #
+    # Stop SitComm service
+    #
+    Write-Output "Info: Stopping SitComm..." | Out-file $Global:tempFilePath -Append
+    	
+    $sitComm = Get-Service SitCommWindowsService -ErrorAction SilentlyContinue
+	
+    if ($sitComm) 
+	{	
+		Stop-Service SitCommWindowsService -WarningAction SilentlyContinue
+	}
+
 
 if(Test-Path -Path $Global:tempFilePath)
 {
@@ -49,18 +66,7 @@ if([string]::IsNullOrEmpty($zipPath))
     Break;
 }
 
-try
-{
-    #
-    # Stop SitComm service
-    #
-    Write-Output "Info: Stopping SitComm..." | Out-file $Global:tempFilePath -Append
-    	
-$sitComm = Get-Service SitCommWindowsService -ErrorAction SilentlyContinue
-	if ($sitComm) 
-	{	
-		Stop-Service SitCommWindowsService -WarningAction SilentlyContinue
-	}
+
 
     #
     # Unpack artifact
@@ -128,7 +134,7 @@ $sitComm = Get-Service SitCommWindowsService -ErrorAction SilentlyContinue
     #
     # Migrating database
     #
-    Write-Output "Info: Migrating database..."| Out-file $Global:tempFilePath -Append
+ <#   Write-Output "Info: Migrating database..."| Out-file $Global:tempFilePath -Append
 
 
     $xmlName = "web.config"
@@ -152,7 +158,7 @@ $sitComm = Get-Service SitCommWindowsService -ErrorAction SilentlyContinue
 
     Write-Output "Info: Migration result: $result" | Out-file $Global:tempFilePath -Append
     
-    Remove-Module "Af.Forms.Tools.Fls.DataBaseMigrator" -Force
+    Remove-Module "Af.Forms.Tools.Fls.DataBaseMigrator" -Force #>
 
     return (Get-Content $Global:tempFilePath)
 

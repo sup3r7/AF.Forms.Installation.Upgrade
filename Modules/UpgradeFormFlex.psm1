@@ -311,8 +311,6 @@ function Update-Server
 
 			    param ($installationPath, $formFlexPart, $sourceIpAddress, $upgradePackage, $localCredential, $artifactFile, $localTempLogfileName)
 
-                Set-PSBreakpoint -Variable BreakHere
-              
 				New-PSDrive -Name I -PSProvider FileSystem -Root "\\$sourceIpAddress\Fabio New Install Files" -Credential $localCredential
                  
                 if(Test-Path -Path "I:\$localTempLogfileName")
@@ -335,8 +333,14 @@ function Update-Server
 				
                 switch ($formFlexPart)
 				{
-					"Fas" { Copy-Item -Path "I:\Scripts\UpgradeFas.ps1" -Destination $installationPath; Break }
-					"Fls" { Copy-Item -Path "I:\Scripts\UpgradeFls.ps1" -Destination $installationPath; Break }
+					"Fas" { Copy-Item -Path "I:\Scripts\UpgradeFas.ps1" -Destination $installationPath;
+                            Copy-Item -Path "I:\Scripts\UpgradeDataBase.ps1" -Destination $installationPath;
+                            Copy-Item -Path "I:\Scripts\UpgradeVersionNumber.ps1" -Destination $installationPath;
+                            Copy-Item -Path "I:\Scripts\Initialize-SqlPsEnvironment.ps1" -Destination $installationPath; Break }
+					"Fls" { Copy-Item -Path "I:\Scripts\UpgradeFls.ps1" -Destination $installationPath;
+                            Copy-Item -Path "I:\Scripts\UpgradeDataBase.ps1" -Destination $installationPath;
+                            Copy-Item -Path "I:\Scripts\UpgradeVersionNumber.ps1" -Destination $installationPath;
+                            Copy-Item -Path "I:\Scripts\Initialize-SqlPsEnvironment.ps1" -Destination $installationPath; Break }
 					"Lab" { Copy-Item -Path "I:\Scripts\UpgradeLab.ps1" -Destination $installationPath; Break }
                     "Etl" { Copy-Item -Path "I:\Scripts\MoveEtl.ps1"    -Destination $installationPath; Break }
                     "Rdm" { Copy-Item -Path "I:\Scripts\UpgradeRdm.ps1" -Destination $installationPath;
@@ -355,14 +359,23 @@ function Update-Server
 
 				switch ($formFlexPart)
 				{
-					"Fas" {   $templog = . "$installationPath\UpgradeFas.ps1"; Break }
-					"Fls" {   $templog = . "$installationPath\UpgradeFls.ps1"; Break }
+					"Fas" {   $templog = . "$installationPath\UpgradeFas.ps1" 
+                              $upgradeDataBaseHash = & "$installationPath\UpgradeDataBase.ps1" -formType $formFlexPart -Credentials $localCredential
+                              $templog = $upgradeDataBaseHash.Content
+                              $isVersionNumberEqual = $upgradeDataBaseHash.IsVersionNumberEqual
+                              $DLLVersionNumber = $upgradeDataBaseHash.DLLVersionNumber 
+                              $DatabaseVersionNumber = $upgradeDataBaseHash.DatabaseVersionNumber; Break
+                          }
+					"Fls" {   $templog = . "$installationPath\UpgradeFls.ps1"
+                              $upgradeDataBaseHash = & "$installationPath\UpgradeDataBase.ps1" -formType $formFlexPart -Credentials $localCredential
+                              $templog = $upgradeDataBaseHash.Content
+                              $isVersionNumberEqual = $upgradeDataBaseHash.IsVersionNumberEqual
+                              $DLLVersionNumber = $upgradeDataBaseHash.DLLVersionNumber 
+                              $DatabaseVersionNumber = $upgradeDataBaseHash.DatabaseVersionNumber; Break
+                          }
 					"Lab" {   $templog = . "$installationPath\UpgradeLab.ps1"; Break }
                     "Etl" {   $templog = . "$installationPath\MoveEtl.ps1";    Break }
                     "Rdm" {   $templog = . "$installationPath\UpgradeRdm.ps1"; Break }
-                    "Mgr" {   $upgradeDataBaseHash = . "$installationPath\UpgradeDataBase.ps1";
-                              $templog = $upgradeDataBaseHash.Content; $isVersionNumberEqual = $upgradeDataBaseHash.IsVersionNumberEqual
- Break }
 
                     
 				}
@@ -372,28 +385,38 @@ function Update-Server
                 Write-Output "Info: Unmapping source file location..." | Out-File -FilePath "I:\$localTempLogfileName" -Append
                 
 				Remove-PSDrive -Name I
-
-                return @{ Fas = @{ IsVersionNumberEqual = $isVersionNumberEqual } }
+                return @{ formPart = @{ IsVersionNumberEqual = $isVersionNumberEqual; DLLVersionNumber = $DLLVersionNumber; DatabaseVersionNumber = $DatabaseVersionNumber } }
 
 			} -ArgumentList $InstallationPath, $FormFlexPart, $SourceIpAddress, $UpgradePackage, $RemoteCredential, $ArtifactFile , $localTempLogfileName
             
+            
+            Remove-PSSession -Session $Session
 
-            if(($FormFlexPart -eq "Mgr") -and (!$resultHash.Fas.IsVersionNumberEqual))
+            if((($FormFlexPart -eq "Fas") -or ($FormFlexPart -eq "Fls"))  -and (!$resultHash.formPart.IsVersionNumberEqual))
             {   
                    [String]$Button="YesNo"
                     $Icon="Information"
                     $DefaultButton="None"
-                    $Message= "The migration database version number does not match version number in dll, do you want to change  version number on database"
-                    $Title = "test emst"
+                    $Message= "The database is currently in version $($resultHash.formPart.DataBaseVersionNumber) do you want to change version number to $($resultHash.formPart.DLLVersionNumber)?"
+                    $Title = "Update Version"
                     $Button = [System.Windows.MessageBoxButton]::$Button 
                     $Icon = [System.Windows.MessageBoxImage]::$Icon 
                     $DefaultButton = [System.Windows.MessageBoxResult]::$DefaultButton 
                     $result = [System.Windows.MessageBox]::Show($Message,$Title,$Button,$Icon,$DefaultButton)
                     
+			        $Session = New-PSSession -ComputerName $DestinationIpAddress -Credential $RemoteCredential
 
                     if($result -eq "Yes")
                     {
-                        $version = Invoke-Command -Session $Session -ScriptBlock {  . "$installationPath\UpgradeVersionNumber.ps1" }
+                        $versionHash = Invoke-Command -Session $Session -ScriptBlock { Param($installationPath, $formType)  & "$installationPath\UpgradeVersionNumber.ps1" -formType $formType } -ArgumentList $InstallationPath,$FormFlexPart
+                        
+                        if(![string]::IsNullOrEmpty($versionHash.Content))
+                        {
+                             Write-LogMessage -Message $versionHash.Content -ErrorType Info | Out-File -FilePath $Global:tempFilePath -Append
+                        }
+
+                        Write-LogMessage -Message "Updated migration database to $($versionHash.DLLVersionNumber)" -ErrorType Info | Out-File -FilePath $Global:tempFilePath -Append
+
                     }
             }
 
@@ -402,9 +425,6 @@ function Update-Server
             Add-Content -Path $Global:LogFilePath -Value (Get-Content $Script:rootPath\$localTempLogfileName -raw)
             
             Remove-PSSession -Session $Session
-
-                
-               
 
         }
         catch [System.Net.WebException],[System.Exception]

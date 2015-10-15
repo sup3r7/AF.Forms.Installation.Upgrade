@@ -4,7 +4,7 @@
 
 try
 {
-    
+
     # Get rootPath for scripts
     $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition;
     $rootPath = split-path -parent $scriptpath;
